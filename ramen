@@ -1,0 +1,115 @@
+from turtle import Turtle
+from random import sample
+from math   import cos, sin, asin, degrees, radians, dist
+
+class Noodle(object):
+    def __init__(self, width, min_length, max_length, min_bend_radius):
+        self.width = width
+        self.min_length = min_length
+        self.max_length = max_length
+        self.min_bend_radius = min_bend_radius
+        self.circ_radius = width // 3
+        self.bowl_radius = (max_length - min_bend_radius) // 2
+        self.circ = self.points_in_circle(self.circ_radius)
+        self.bowl = self.points_in_circle(self.bowl_radius)
+        self.bowl = dict.fromkeys(sample(self.bowl, len(self.bowl)))
+        self.stack = []
+        self.win = Turtle()
+        self.win.screen.screensize(max_length + 10, max_length + 10)
+        self.win.screen.mode('standard')
+        self.win.screen.bgcolor('red')
+        self.win.ht()
+        self.win.screen.tracer(0)
+
+    def translate(self, p, dx, dy):
+        return [(x + dx, y + dy) for x, y in p]
+
+    def point_at_angle(self, radius, deg):
+        return int(round(radius * cos(radians(deg)))), int(round(radius * sin(radians(deg))))
+
+    def points_on_circle(self, radius, deg1, deg2):
+        return [self.point_at_angle(radius, deg) for deg in range(int(deg1), int(deg2))]
+
+    def points_in_circle(self, radius):
+        return [(i, j) for i in range(-radius, radius) for j in range(-radius, radius) if dist((0, 0), (i, j)) <= radius]
+
+    def draw(self, pts):
+        w1  = self.width
+        w2  = self.width - 2
+        hit = False
+        hsh = set()
+
+        for p in pts:
+            hsh = hsh.union(s := set(self.translate(self.circ, *p)))
+            for q in s:
+                self.bowl.pop(q, None)
+
+        for i, v in enumerate(self.stack):
+            if hsh.intersection(v):
+                pts.extend(self.stack.pop(i))
+                hit = True
+                break
+
+        if not hit:
+            self.stack.append(pts)
+
+        for p in pts:
+            self.win.teleport(*p)
+            self.win.dot(w1, 'black')
+            self.win.dot(w2, 'white')
+      
+    def spaghetti(self, x, y):
+        deg = int(round(degrees(asin(y / d)) if (d := dist((0, 0), (x, y))) else 0))
+        pts = []
+        n   = 0
+
+        if x < 0:
+            deg = 180 - deg
+        
+        p1  = self.point_at_angle(self.bowl_radius, deg)
+        r1  = int(round(dist((x, y), p1) / 2))
+        a1  = self.points_on_circle(r1, deg      , deg + 180)
+        d1  = (3.14 * r1) / 180
+
+        if r1 >= self.min_bend_radius:
+            q1 = p1
+            q2 = a1[0]
+            q3 = self.translate(a1, q1[0] - q2[0], q1[1] - q2[1])
+
+            for i in q3:
+                if (n := n + d1) > self.max_length:
+                    pts = []
+                    n   = 0
+                    break
+                pts.append(i)
+
+        p2  = self.point_at_angle(self.bowl_radius, deg + 180)
+        r2  = int(round(dist((x, y), p2) / 2))
+        a2  = self.points_on_circle(r2, deg + 180, deg + 360)
+        d2  = (3.14 * r2) / 180
+        
+        if r2 >= self.min_bend_radius:
+            q1 = pts[-1] if pts else (x, y)
+            q2 = a2[0]
+            q3 = self.translate(a2, q1[0] + q2[0], q1[1] + q2[1])
+
+            for i in q3[::-1]:
+                if (n := n + d2) > self.max_length:
+                    break
+                pts.append(i)
+
+        if n >= self.min_length:
+            self.draw(pts)
+            self.win.screen.update()
+
+    def run(self):
+        for p in list(self.bowl.keys()):
+            if p in self.bowl:
+                self.spaghetti(*p)
+        print('done')
+
+#-----------------------------------------------------------------------
+
+o = Noodle(width=30, min_length=100, max_length=500, min_bend_radius=30)
+o.run()
+o.win.screen.mainloop()
