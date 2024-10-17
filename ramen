@@ -8,8 +8,8 @@ class Noodle(object):
         self.min_length = min_length
         self.max_length = max_length
         self.min_bend_radius = min_bend_radius
-        self.circ_radius = width // 3
-        self.bowl_radius = (max_length - min_bend_radius) // 2
+        self.circ_radius = int(round(width / 2))
+        self.bowl_radius = int(round((max_length - min_bend_radius) / 2))
         self.circ = self.points_in_circle(self.circ_radius)
         self.bowl = self.points_in_circle(self.bowl_radius)
         self.bowl = dict.fromkeys(sample(self.bowl, len(self.bowl)))
