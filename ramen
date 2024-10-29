@@ -34,8 +34,6 @@ class Noodle(object):
         return [(i, j) for i in range(-radius, radius) for j in range(-radius, radius) if dist((0, 0), (i, j)) <= radius]
 
     def draw(self, pts):
-        w1  = self.width
-        w2  = self.width - 2
         hit = False
         hsh = set()
 
@@ -52,6 +50,9 @@ class Noodle(object):
 
         if not hit:
             self.stack.append(pts)
+
+        w1 = self.width
+        w2 = self.width - 2
 
         for p in pts:
             self.win.teleport(*p)
