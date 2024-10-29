@@ -69,7 +69,7 @@ class Noodle(object):
         
         p1  = self.point_at_angle(self.bowl_radius, deg)
         r1  = int(round(dist((x, y), p1) / 2))
-        a1  = self.points_on_circle(r1, deg      , deg + 180)
+        a1  = self.points_on_circle(r1, deg, deg + 180)
         d1  = (3.14 * r1) / 180
 
         if r1 >= self.min_bend_radius:
